@@ -1,4 +1,4 @@
-import { FlowUserStateService } from "./FlowUserStateService.ts";
+import { FlowState } from "./FlowState.ts";
 import { removeElementWrapper } from "../render/functions.ts";
 import {
   removeFlowFromStorage,
@@ -16,9 +16,9 @@ import { removeFlowStepElement, renderFlowStep } from "./render-step.ts";
 import { track } from "../tracker/tracker.ts";
 import { EventType } from "../tracker/types.ts";
 
-function initFlowRenderer(flow: Flow): FlowUserStateService {
+function initFlowRenderer(flow: Flow): FlowState {
   setFlowInStorageIfDifferent(flow);
-  const userStateService = new FlowUserStateService(localStorage, flow);
+  const userStateService = new FlowState(localStorage, flow);
   domEventListeners.setOnDocumentClickEvent(userStateService, onStepNextClick);
 
   return userStateService;
@@ -38,7 +38,7 @@ export const handlePreviewFlow = async (flow: Flow) => {
 };
 
 export const gracefulTerminatePreviewFlow = () => {
-  FlowUserStateService.resetStateInStorage(localStorage);
+  FlowState.resetStateInStorage(localStorage);
   removeElementWrapper(document);
 
   removeFlowFromStorage();
@@ -48,7 +48,7 @@ export const gracefulTerminatePreviewFlow = () => {
 
 const tourListener = async (
   flow: Flow,
-  userStateService: FlowUserStateService,
+  userStateService: FlowState,
 ): Promise<boolean> => {
   const currentUrl = window.location.origin;
   if (flow.baseUrl && !currentUrl.endsWith(flow.baseUrl)) {
@@ -117,7 +117,7 @@ const onFinishFlow = (flow: Flow) => {
   }
 };
 
-const onStepNextClick = async (userStateService: FlowUserStateService) => {
+const onStepNextClick = async (userStateService: FlowState) => {
   const currentStep = userStateService.getCurrentStep();
   if (!currentStep) {
     return;

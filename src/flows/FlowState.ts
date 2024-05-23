@@ -7,10 +7,10 @@ import {
 import { track } from "../tracker/tracker.ts";
 import { EventType } from "../tracker/types.ts";
 
-export class FlowUserStateService {
+export class FlowState {
   private static FLOW_USER_STATE_STORAGE_KEY = "milestoneUserState";
   private readonly storage: Storage;
-  private readonly userState: FlowUserState;
+  private readonly userState: State;
   private readonly enrolledFlow: Flow;
   private readonly stepChildrenMap: { [p: string]: string | undefined };
   private readonly nodesMap: { [p: string]: FlowStep | undefined } = {};
@@ -33,14 +33,13 @@ export class FlowUserStateService {
     }
 
     this.userState = {
-      userId: `mockuser_${Date.now()}`,
       currentEnrolledFlowId: enrolledFlow.id,
       currentStepId: sourceNode.stepId,
       finishedSteps: [],
     };
 
-    const encodedData = getFromLocalStorage<FlowUserState>(
-      FlowUserStateService.FLOW_USER_STATE_STORAGE_KEY,
+    const encodedData = getFromLocalStorage<State>(
+      FlowState.FLOW_USER_STATE_STORAGE_KEY,
     );
     if (encodedData && encodedData.currentEnrolledFlowId === enrolledFlow.id) {
       this.userState = encodedData;
@@ -50,11 +49,11 @@ export class FlowUserStateService {
   }
 
   public static resetStateInStorage(storage: Storage): void {
-    storage.removeItem(FlowUserStateService.FLOW_USER_STATE_STORAGE_KEY);
+    storage.removeItem(FlowState.FLOW_USER_STATE_STORAGE_KEY);
   }
 
-  public getUserState(): FlowUserState {
-    return _.cloneDeep<FlowUserState>(this.userState);
+  public getUserState(): State {
+    return _.cloneDeep<State>(this.userState);
   }
 
   public getEnrolledFlowId(): string | null {
@@ -119,20 +118,19 @@ export class FlowUserStateService {
   }
 
   public destroy(): void {
-    FlowUserStateService.resetStateInStorage(this.storage);
+    FlowState.resetStateInStorage(this.storage);
     this.userState.currentStepId = null;
   }
 
   private commit(): void {
-    setInLocalStorage<FlowUserState>(
-      FlowUserStateService.FLOW_USER_STATE_STORAGE_KEY,
+    setInLocalStorage<State>(
+      FlowState.FLOW_USER_STATE_STORAGE_KEY,
       this.userState,
     );
   }
 }
 
-export interface FlowUserState {
-  userId: string;
+interface State {
   currentEnrolledFlowId: string;
   currentStepId: string | null;
   finishedSteps: [string, number][];

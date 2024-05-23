@@ -1,4 +1,4 @@
-import { FlowUserStateService } from "./FlowUserStateService.ts";
+import { FlowState } from "./FlowState.ts";
 import { FlowStepElementAction } from "../types/flow.ts";
 import { waitForElm } from "../render/functions.ts";
 import { matchTargetUrl } from "../url/processors.ts";
@@ -6,8 +6,8 @@ import { matchTargetUrl } from "../url/processors.ts";
 let onDocumentClick: any = null;
 let onDocumentInput: any = null;
 export function setOnDocumentClickEvent(
-  userStateService: FlowUserStateService,
-  onStepNextClick: (userStateService: FlowUserStateService) => void,
+  userStateService: FlowState,
+  onStepNextClick: (userStateService: FlowState) => void,
 ) {
   if (onDocumentClick) {
     document.removeEventListener("click", onDocumentClick, true);
@@ -46,9 +46,9 @@ export function destroyListeners() {
 
 const clickEventsListener = async (
   e: Event,
-  userStateService: FlowUserStateService,
+  userStateService: FlowState,
   currentPathUrl: string,
-  onStepNextClick: (userStateService: FlowUserStateService) => void,
+  onStepNextClick: (userStateService: FlowState) => void,
 ) => {
   const currentStep = userStateService.getCurrentStep();
   if (!currentStep) {
@@ -88,9 +88,9 @@ const clickEventsListener = async (
 
 const inputEventsListener = async (
   e: Event,
-  userStateService: FlowUserStateService,
+  userStateService: FlowState,
   currentPathUrl: string,
-  onStepNextClick: (userStateService: FlowUserStateService) => void,
+  onStepNextClick: (userStateService: FlowState) => void,
 ) => {
   const currentStep = userStateService.getCurrentStep();
   if (!currentStep) {
