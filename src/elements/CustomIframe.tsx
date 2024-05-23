@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -11,8 +13,8 @@ const CustomIframe = ({
   settings = {},
   customStyle = {},
   className = "",
-}: any) => {
-  const [contentRef, setContentRef] = useState<any>(null);
+}) => {
+  const [contentRef, setContentRef] = useState(null);
 
   const cache = createCache({
     key: "css",
@@ -33,14 +35,9 @@ const CustomIframe = ({
       metaViewport.content = "initial-scale=1, width=device-width";
       head.appendChild(metaViewport);
 
-      // if (settings?.quillCss === true) {
-      //   const quillStyle = applyQuillEditorStyle(document)
-      //   head.appendChild(quillStyle)
-      // }
-
       const metaColorScheme = document.createElement("meta");
       metaColorScheme.name = "color-scheme";
-      metaColorScheme.content = "light dark";
+      metaColorScheme.content = "normal";
       head.appendChild(metaColorScheme);
 
       if (mountNode) {
@@ -52,7 +49,7 @@ const CustomIframe = ({
   return (
     <CacheProvider value={cache}>
       <iframe
-        // id="milestoneStepFrame"
+        id={`milestoneFrame${Date.now()}`}
         ref={setContentRef}
         className={className}
         style={{

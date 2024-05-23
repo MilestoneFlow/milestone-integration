@@ -1,85 +1,40 @@
-import { listenFlow } from "./flowPreview.tsx";
-import { ApiFlow } from "./api/ApiFlow.ts";
-import {
-  getEnrolledUserInStorage,
-  storeEnrolledUserInStorage,
-} from "./service/EnrolledUsersService.ts";
-import { TokenStore } from "./service/TokenStore.ts";
-import { FlowUserStateService } from "./service/FlowUserStateService.ts";
+import { createPublicApiClient } from "./api/publicApiClient.ts";
+import { EnrolledUser, InputUserData } from "./types/user.ts";
+import { toEnrolledUser } from "./user/enroll.ts";
+import listener from "./url/listener.ts";
+import { createListener as createHelpersListener } from "./helpers/render.ts";
+import * as tracker from "./tracker/tracker.ts";
+import { handlePreviewFlow } from "./flows/render.ts";
 
-const showFlow = async (
-  token: string,
-  externalUserId: string,
-  flowId: string,
-) => {
-  await listenFlow(token, externalUserId, flowId);
+const bootstrap = async (token: string, user: EnrolledUser) => {
+  const publicApiClient = createPublicApiClient(token);
+
+  await publicApiClient.enroll(user);
+
+  const helpersListener = await createHelpersListener(publicApiClient);
+
+  listener([helpersListener]);
+  tracker.start(publicApiClient, user.externalId);
+
+  const flow = await publicApiClient.fetchFlowById("6637ff7f9d68d5be54d5ab56");
+  await handlePreviewFlow(flow);
 };
 
-const listen = async (token: string, externalUserId: string) => {
-  let userState = FlowUserStateService.getStateFromStorage(localStorage);
-  if (!userState?.currentEnrolledFlowId) {
-    userState = await ApiFlow.getUserState(token, externalUserId);
-  }
-  if (null === userState) {
-    return;
-  }
-
-  FlowUserStateService.setStateInStorage(localStorage, userState);
-  if (FlowUserStateService.getIntervalListenerId(localStorage)) {
-    clearInterval(FlowUserStateService.getIntervalListenerId(localStorage));
-    FlowUserStateService.removeIntervalListenerId(localStorage);
-  }
-  const intervalListenerId = setInterval(() => {
-    const updatedState = FlowUserStateService.getStateFromStorage(localStorage);
-    if (updatedState) {
-      ApiFlow.updateUserState(token, externalUserId, updatedState);
-    }
-  }, 10000);
-  FlowUserStateService.setIntervalListenerId(localStorage, intervalListenerId);
-
-  await showFlow(token, externalUserId, userState.currentEnrolledFlowId);
-};
-
-const bootstrap = async (
-  token: string,
-  userData: UserData,
-  opts: Partial<FlowClientOpts>,
-) => {
-  const currentEnrolled = getEnrolledUserInStorage();
-  if (currentEnrolled?.userId !== userData.userId) {
-    await ApiFlow.enrollUser(token, userData);
-    storeEnrolledUserInStorage(userData);
-  }
-
-  TokenStore.setToken(token);
-
-  await listen(token, userData.userId);
-};
-
-const init = async (
-  token: string,
-  userData: UserData,
-  opts: Partial<FlowClientOpts> = {},
-) => {
+const init = async (token: string, userData: InputUserData) => {
   try {
-    await bootstrap(token, userData, opts);
+    console.log("Initializing Milestone Flow Client");
+    await bootstrap(token, toEnrolledUser(userData));
   } catch (err) {
     console.error("Unexpected error. Check the API Token.");
-    FlowUserStateService.removeIntervalListenerId(localStorage);
   }
 };
 
-// @ts-expect-error window obj
-window.milestoneFlowClient = {
-  init,
-};
-
-export interface UserData {
-  userId: string;
-  name?: string;
-  email?: string;
-  created?: number;
-  segment?: string;
+if (typeof window !== "undefined") {
+  if (
+    (window as any).milestoneFlowClient === undefined ||
+    (window as any).milestoneFlowClient === null
+  ) {
+    (window as any).milestoneFlowClient = {};
+  }
+  (window as any).milestoneFlowClient.init = init;
 }
-
-interface FlowClientOpts {}
