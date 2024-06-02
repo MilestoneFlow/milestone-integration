@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -13,8 +11,15 @@ const CustomIframe = ({
   settings = {},
   customStyle = {},
   className = "",
+}: {
+  children: React.ReactNode;
+  width: string;
+  height: string;
+  settings?: Record<string, any>;
+  customStyle?: Record<string, any>;
+  className?: string;
 }) => {
-  const [contentRef, setContentRef] = useState(null);
+  const [contentRef, setContentRef] = useState<HTMLIFrameElement | null>(null);
 
   const cache = createCache({
     key: "css",

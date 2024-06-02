@@ -1,10 +1,9 @@
-import { MilestoneFlowElementWrapperId } from "../render/constants.ts";
-import { VisualElementTemplate } from "./model/VisualElement.ts";
-import { Block, Placement } from "../types/element.ts";
+import { MilestoneFlowElementWrapperId } from "./render/constants";
+import { Block, ElementTemplate, Placement } from "../types/element";
 import { createRoot } from "react-dom/client";
-import { TooltipElementWrapper } from "./tooltip/TooltipElementWrapper.tsx";
-import { getOrCreateAppContainer } from "../render/functions.ts";
-import { PopupElementWrapper } from "./popup/PopupElementWrapper.tsx";
+import { TooltipElementWrapper } from "./tooltip/TooltipElementWrapper";
+import { getOrCreateAppContainer } from "./render/functions";
+import { PopupElementWrapper } from "./popup/PopupElementWrapper";
 
 export function getPopupId(id: string) {
   return `milestone-popup-${id}`;
@@ -27,6 +26,34 @@ const createDivForPopup = (document: Document, id: string) => {
   return modalContainer;
 };
 
+function createTooltipContainer(
+  document: Document,
+  containerId: string,
+  dataAttr: Record<string, string> = {},
+) {
+  const tooltipContainer = document.createElement("div");
+  if (!tooltipContainer) {
+    throw new Error("Failed init");
+  }
+
+  tooltipContainer.id = containerId;
+  tooltipContainer.role = "tooltip";
+  tooltipContainer.style.position = "absolute";
+  tooltipContainer.style.top = "0";
+  tooltipContainer.style.left = "0";
+  tooltipContainer.style.width = "max-content";
+  tooltipContainer.style.zIndex = `${Number.MAX_SAFE_INTEGER}`;
+  tooltipContainer.style.opacity = "0";
+
+  if (Object.keys(dataAttr).length) {
+    for (const key in dataAttr) {
+      tooltipContainer.setAttribute(`data-${key}`, dataAttr[key]);
+    }
+  }
+
+  return tooltipContainer;
+}
+
 export const createPopup = (document: Document, opts: PopupOpts) => {
   const popupId = opts.id ? getPopupId(opts.id) : MilestoneFlowElementWrapperId;
   const modalContainer = createDivForPopup(document, popupId);
@@ -37,9 +64,15 @@ export const createPopup = (document: Document, opts: PopupOpts) => {
     }
   }
 
+  const onCloseClick = () => {
+    opts.beforeClose?.forEach((fn) => fn());
+    modalContainer.remove();
+  };
+
   const root = createRoot(modalContainer);
   root.render(
     <PopupElementWrapper
+      onCloseClick={onCloseClick}
       onNextClick={opts.onNextClick}
       blocks={opts.blocks}
       actionText={opts.actionText}
@@ -60,29 +93,14 @@ export function getTooltipId(id: string) {
 }
 
 export const createTooltip = async (document: Document, opts: TooltipOpts) => {
-  const tooltipContainer = document.createElement("div");
-  if (!tooltipContainer) {
-    throw new Error("Failed init");
-  }
-
   const tooltipId = opts.id
     ? getTooltipId(opts.id)
     : MilestoneFlowElementWrapperId;
-
-  tooltipContainer.id = tooltipId;
-  tooltipContainer.role = "tooltip";
-  tooltipContainer.style.position = "absolute";
-  tooltipContainer.style.top = "0";
-  tooltipContainer.style.left = "0";
-  tooltipContainer.style.width = "max-content";
-  tooltipContainer.style.zIndex = `${Number.MAX_SAFE_INTEGER}`;
-  tooltipContainer.style.opacity = "0";
-
-  if (opts.dataAttributes) {
-    for (const key in opts.dataAttributes) {
-      tooltipContainer.setAttribute(`data-${key}`, opts.dataAttributes[key]);
-    }
-  }
+  const tooltipContainer = createTooltipContainer(
+    document,
+    tooltipId,
+    opts.dataAttributes ?? {},
+  );
 
   const appContainer = getOrCreateAppContainer(document);
   appContainer.appendChild(tooltipContainer);
@@ -131,7 +149,7 @@ const getAvatarImageUrl = (
 interface VisualElementOpts {
   id: string;
   skipHotspot?: boolean;
-  elementTemplate: VisualElementTemplate;
+  elementTemplate: ElementTemplate;
   blocks: Block[];
   themeColor: string;
   placement: Placement;

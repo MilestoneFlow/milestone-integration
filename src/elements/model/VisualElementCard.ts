@@ -1,8 +1,7 @@
-import { VisualElementTemplate } from "./VisualElement";
-import { Placement } from "../../types/element.ts";
+import { ElementTemplate, Placement } from "../../types/element";
 
 export interface CardProps {
-  template: VisualElementTemplate;
+  template: ElementTemplate;
   arrowPlacement: Placement;
 }
 
@@ -11,5 +10,5 @@ export interface ActionButtonProps {
 }
 
 export interface CloseButtonProps {
-  template: VisualElementTemplate;
+  template: ElementTemplate;
 }

@@ -1,8 +1,7 @@
 import { useState } from "react";
 import TooltipElement from "./TooltipElement";
-import { VisualElementTemplate } from "../model/VisualElement";
-import CustomIframe from "../CustomIframe.tsx";
-import { Block, Placement } from "../../types/element.ts";
+import CustomIframe from "../CustomIframe";
+import { Block, ElementTemplate, Placement } from "../../types/element";
 
 const noop = () => {};
 
@@ -37,7 +36,7 @@ export const TooltipElementWrapper = ({
 
 interface TooltipElementWrapperProps {
   onStepNextClick: (() => void) | undefined;
-  template: VisualElementTemplate;
+  template: ElementTemplate;
   themeColor: string | undefined;
   blocks: Block[];
   placement: Placement;

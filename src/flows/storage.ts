@@ -1,8 +1,8 @@
-import { Flow } from "../types/flow.ts";
+import { Flow } from "../types/flow";
 import {
   getFromLocalStorage,
   setInLocalStorage,
-} from "../util/localStorageUtil.ts";
+} from "../util/localStorageUtil";
 
 export const setFlowInStorage = (flow: Flow) => {
   setInLocalStorage<Flow>("milestoneFlow", flow);
@@ -24,14 +24,4 @@ export const setFlowInStorageIfDifferent = (flow: Flow) => {
 export const removeFlowFromStorage = () => {
   localStorage.removeItem("milestoneFlow");
   localStorage.removeItem("milestoneFlowCurrentStep");
-  clearInterval(getIntervalIdStorage());
-  localStorage.removeItem("milestonePreviewIntervalId");
-};
-
-export const setIntervalIdStorage = (intervalId: number) => {
-  setInLocalStorage<number>("milestonePreviewIntervalId", intervalId);
-};
-
-export const getIntervalIdStorage = () => {
-  return getFromLocalStorage<number>("milestonePreviewIntervalId") ?? undefined;
 };

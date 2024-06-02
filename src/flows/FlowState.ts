@@ -1,11 +1,11 @@
 import _ from "lodash";
-import { Flow, FlowStep } from "../types/flow.ts";
+import { Flow, FlowStep } from "../types/flow";
 import {
   getFromLocalStorage,
   setInLocalStorage,
-} from "../util/localStorageUtil.ts";
-import { track } from "../tracker/tracker.ts";
-import { EventType } from "../tracker/types.ts";
+} from "../util/localStorageUtil";
+import { track } from "../tracker/tracker";
+import { EventType } from "../tracker/types";
 
 export class FlowState {
   private static FLOW_USER_STATE_STORAGE_KEY = "milestoneUserState";
@@ -14,7 +14,6 @@ export class FlowState {
   private readonly enrolledFlow: Flow;
   private readonly stepChildrenMap: { [p: string]: string | undefined };
   private readonly nodesMap: { [p: string]: FlowStep | undefined } = {};
-  private finishEffectsInProgress: boolean = false;
 
   public constructor(storage: Storage, enrolledFlow: Flow) {
     this.storage = storage;
@@ -36,6 +35,7 @@ export class FlowState {
       currentEnrolledFlowId: enrolledFlow.id,
       currentStepId: sourceNode.stepId,
       finishedSteps: [],
+      skipped: false,
     };
 
     const encodedData = getFromLocalStorage<State>(
@@ -48,16 +48,12 @@ export class FlowState {
     this.commit();
   }
 
+  public static existsInStorage(storage: Storage): boolean {
+    return !!storage.getItem(FlowState.FLOW_USER_STATE_STORAGE_KEY);
+  }
+
   public static resetStateInStorage(storage: Storage): void {
     storage.removeItem(FlowState.FLOW_USER_STATE_STORAGE_KEY);
-  }
-
-  public getUserState(): State {
-    return _.cloneDeep<State>(this.userState);
-  }
-
-  public getEnrolledFlowId(): string | null {
-    return this.userState.currentEnrolledFlowId;
   }
 
   public isFinished(): boolean {
@@ -65,18 +61,6 @@ export class FlowState {
       this.userState.currentStepId === null &&
       this.userState.finishedSteps.length === this.enrolledFlow.steps.length
     );
-  }
-
-  public handleFinish(): void {
-    if (!this.isFinished()) {
-      throw Error("You cannot finish a flow that is not finished");
-    }
-
-    this.finishEffectsInProgress = true;
-  }
-
-  public isFinishEffectsInProgress(): boolean {
-    return this.finishEffectsInProgress;
   }
 
   public getCurrentStep(): FlowStep | null {
@@ -117,7 +101,18 @@ export class FlowState {
     this.commit();
   }
 
+  public switchToSkipped() {
+    this.userState.currentStepId = null;
+    this.userState.skipped = true;
+    this.commit();
+  }
+
+  public isSkipped(): boolean {
+    return this.userState.skipped;
+  }
+
   public destroy(): void {
+    console.log("Destroying flow state");
     FlowState.resetStateInStorage(this.storage);
     this.userState.currentStepId = null;
   }
@@ -134,4 +129,5 @@ interface State {
   currentEnrolledFlowId: string;
   currentStepId: string | null;
   finishedSteps: [string, number][];
+  skipped: boolean;
 }

@@ -6,11 +6,21 @@ import CardContent from "@mui/material/CardContent";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import { Avatar, Stack } from "@mui/material";
-import { FlowStepElementTemplate } from "../../types/flow";
 import { getMediaBlock, getTextBlockContent } from "../../util/BlockService";
 import anime from "animejs";
 import { buttonThemeColoring } from "../../util/borderingHelper";
-import { Block, BlockType } from "../../types/element.ts";
+import { Block, BlockType, ElementTemplate } from "../../types/element";
+import { CloseButtonPopup } from "../card/CardComponent.tsx";
+
+function getYouTubeEmbedUrl(url: string): string | null {
+  const regex =
+    /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube.com\/embed\/)([^"&?/ ]{11})/;
+  const match = url.match(regex);
+  if (match && match[1]) {
+    return `https://www.youtube.com/embed/${match[1]}`;
+  }
+  return null;
+}
 
 const PopupMedia = ({ blocks }: { blocks: Block[] }) => {
   const mediaBlock = getMediaBlock(blocks);
@@ -18,7 +28,12 @@ const PopupMedia = ({ blocks }: { blocks: Block[] }) => {
     return "";
   }
 
-  if (mediaBlock.type === BlockType.Video) {
+  if (mediaBlock.type === BlockType.Video && mediaBlock.data?.length) {
+    const embedUrl = getYouTubeEmbedUrl(mediaBlock.data);
+    if (!embedUrl) {
+      return "";
+    }
+
     return (
       <div
         className="video-responsive"
@@ -27,7 +42,7 @@ const PopupMedia = ({ blocks }: { blocks: Block[] }) => {
         }}
       >
         <iframe
-          src={mediaBlock.data}
+          src={embedUrl}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           title="Embedded youtube"
@@ -65,6 +80,7 @@ const PopupElement = ({
   themeColor,
   avatarImageUrl,
   actionText,
+  onCloseClick,
 }: PopupElementProps) => {
   const ref = useRef(null);
   useEffect(() => {
@@ -141,6 +157,9 @@ const PopupElement = ({
           backgroundColor: template === "dark" ? "#32363E" : "#f5f5f5",
         }}
       >
+        <CloseButtonPopup template={template} onClick={onCloseClick}>
+          &times;
+        </CloseButtonPopup>
         <CardContent>
           <Stack spacing={1} sx={{ alignItems: "center" }}>
             <PopupMedia blocks={blocks} />
@@ -194,8 +213,9 @@ interface PopupElementProps {
   blocks: Block[];
   actionText: string;
   onNextClick: () => void;
-  template: FlowStepElementTemplate;
+  template: ElementTemplate;
   setHeight: any;
   themeColor: string | undefined;
   avatarImageUrl: string | undefined;
+  onCloseClick: () => void;
 }

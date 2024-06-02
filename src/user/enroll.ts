@@ -1,8 +1,8 @@
 import {
   getFromLocalStorage,
   setInLocalStorage,
-} from "../util/localStorageUtil.ts";
-import { EnrolledUser, InputUserData } from "../types/user.ts";
+} from "../util/localStorageUtil";
+import { EnrolledUser, InputUserData } from "../types/user";
 
 const EnrolledUserKey = "milestoneEnrolledUser";
 

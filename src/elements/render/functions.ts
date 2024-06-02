@@ -2,7 +2,7 @@ import {
   MilestoneFlowElementWrapperId,
   MilestoneHotspotId,
   MilestoneHotspotStyleId,
-} from "./constants.ts";
+} from "./constants";
 
 export const waitForElm = (selector: string): Promise<Element | null> => {
   return new Promise((resolve) => {

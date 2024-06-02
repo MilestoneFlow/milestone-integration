@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { FlowStep, FlowStepElementTemplate } from "../../types/flow";
 import PopupElement from "./PopupElement";
-import CustomIframe from "../CustomIframe.tsx";
-import { Block } from "../../types/element.ts";
+import CustomIframe from "../CustomIframe";
+import { Block, ElementTemplate } from "../../types/element";
 
 export const PopupElementWrapper = ({
   onNextClick,
@@ -11,12 +10,14 @@ export const PopupElementWrapper = ({
   template,
   themeColor,
   avatarImageUrl,
+  onCloseClick,
 }: PopupElementWrapperProps) => {
   const [height, setHeight] = useState(170);
 
   return (
     <CustomIframe width={"425px"} height={`${height}px`}>
       <PopupElement
+        onCloseClick={onCloseClick}
         onNextClick={onNextClick}
         blocks={blocks}
         actionText={actionText}
@@ -33,7 +34,8 @@ interface PopupElementWrapperProps {
   blocks: Block[];
   actionText: string;
   onNextClick: () => void;
-  template: FlowStepElementTemplate;
+  template: ElementTemplate;
   themeColor: string | undefined;
   avatarImageUrl?: string;
+  onCloseClick: () => void;
 }

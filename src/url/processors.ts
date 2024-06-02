@@ -19,3 +19,7 @@ function escapeRegExp(str: string) {
 function replaceAll(str: string, find: string, replace: string) {
   return str.replace(new RegExp(escapeRegExp(find), "g"), replace);
 }
+
+export const parseBaseUrl = (urlInput: string) => {
+  return urlInput.replace("https://", "").replace("http://", "").split("/")[0];
+};

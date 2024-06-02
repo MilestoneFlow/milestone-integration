@@ -23,3 +23,8 @@ export interface Block {
   data: string;
   order: number;
 }
+
+export enum ElementTemplate {
+  LIGHT = "light",
+  DARK = "dark",
+}

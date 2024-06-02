@@ -1,4 +1,4 @@
-import { Block, ElementType, Placement } from "./element.ts";
+import { Block, ElementType, Placement } from "./element";
 
 export interface Helper {
   publicId: string;

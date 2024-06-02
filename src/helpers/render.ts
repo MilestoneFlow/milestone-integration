@@ -1,27 +1,26 @@
-import { PublicApiClient } from "../api/publicApiClient.ts";
-import { Helper, HelperRenderAction } from "../types/helper.ts";
-import { matchTargetUrl } from "../url/processors.ts";
+import { PublicApiClient } from "../api/publicApiClient";
+import { Helper, HelperRenderAction } from "../types/helper";
+import { matchTargetUrl } from "../url/processors";
 import {
   createHotspot,
   getHotspotDomElement,
-} from "../elements/HotspotElement.ts";
+} from "../elements/HotspotElement";
 import {
   getOrCreateAppContainer,
   removeAppContainer,
   removeElementWrapper,
   waitForElm,
-} from "../render/functions.ts";
+} from "../elements/render/functions";
 import { autoUpdate, computePosition, offset, shift } from "@floating-ui/dom";
-import { Placement } from "../types/element.ts";
+import { ElementTemplate, Placement } from "../types/element";
 import {
   createTooltip,
   getTooltipId,
   removeTooltip,
-} from "../elements/factory.tsx";
-import { FlowStepElementTemplate } from "../types/flow.ts";
-import { track } from "../tracker/tracker.ts";
-import { EventType } from "../tracker/types.ts";
-import { repositionAttachedElement } from "../render/positioner.ts";
+} from "../elements/factory";
+import { track } from "../tracker/tracker";
+import { EventType } from "../tracker/types";
+import { repositionAttachedElement } from "../elements/render/positioner";
 
 export async function createListener(apiClient: PublicApiClient) {
   const helpers = await apiClient.fetchHelpers();
@@ -170,7 +169,7 @@ async function displayTooltip(element: Helper) {
     onNextClick: onActionClick,
     blocks: element.data.blocks ?? [],
     placement: element.data.placement ?? Placement.Bottom,
-    elementTemplate: FlowStepElementTemplate.DARK,
+    elementTemplate: ElementTemplate.DARK,
     themeColor: element.data.iconColor ?? "#f5f5f5",
     actionable: true,
     actionText: element.data.actionText,

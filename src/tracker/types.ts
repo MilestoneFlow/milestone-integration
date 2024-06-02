@@ -27,4 +27,5 @@ export enum EventType {
   FlowStepStart = "flow_step_start",
   FlowStepFinished = "flow_step_finished",
   FlowSkipped = "flow_skipped",
+  FlowFinished = "flow_finished",
 }

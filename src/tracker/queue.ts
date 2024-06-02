@@ -1,4 +1,4 @@
-import { ElementDataEnvelope } from "./types.ts";
+import { ElementDataEnvelope } from "./types";
 
 const queue: ElementDataEnvelope[] = [];
 

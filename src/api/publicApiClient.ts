@@ -1,14 +1,24 @@
-import { EnrolledUser } from "../types/user.ts";
-import { PublicApiBaseUrl } from "./constants.ts";
-import { Helper } from "../types/helper.ts";
-import { Flow } from "../types/flow.ts";
-import { ElementDataEnvelope } from "../tracker/types.ts";
+import { EnrolledUser } from "../types/user";
+import { PublicApiBaseUrl } from "./constants";
+import { Helper } from "../types/helper";
+import { Flow } from "../types/flow";
+import { ElementDataEnvelope } from "../tracker/types";
 
 class PublicApiClient {
   private readonly token: string;
 
   public constructor(token: string) {
     this.token = token;
+  }
+
+  public async validate(): Promise<void> {
+    const res = await fetch(this.getURL("/validate"), {
+      method: "GET",
+      headers: await this.getHeaders(),
+    });
+    if (res.status !== 200) {
+      throw new Error("Invalid token");
+    }
   }
 
   public async enroll(user: EnrolledUser): Promise<void> {
@@ -31,6 +41,15 @@ class PublicApiClient {
   public async fetchFlowById(flowId: string): Promise<Flow> {
     const res = await fetch(this.getURL(`/flows/${flowId}`), {
       method: "GET",
+      headers: await this.getHeaders(),
+    }).then((res) => res.json());
+
+    return res;
+  }
+
+  public async enrollInFlow(externalUserId: string): Promise<Flow | null> {
+    const res = await fetch(this.getURL(`/${externalUserId}/flows`), {
+      method: "POST",
       headers: await this.getHeaders(),
     }).then((res) => res.json());
 

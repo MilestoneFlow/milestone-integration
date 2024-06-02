@@ -4,8 +4,8 @@ import {
   CloseButtonProps,
 } from "../model/VisualElementCard";
 import styled from "@emotion/styled";
-import { buttonThemeColoring } from "../../util/borderingHelper.ts";
-import { getArrowCSS } from "../tooltip/ArrowPositioning.ts";
+import { buttonThemeColoring } from "../../util/borderingHelper";
+import { getArrowCSS } from "../tooltip/ArrowPositioning";
 
 export const CardContainer = styled.div`
   position: relative;
@@ -61,4 +61,15 @@ export const CloseButton = styled.button<CloseButtonProps>`
       ? "#f5f5f5"
       : "#32363E"}; // Adjust color based on theme
   font-size: 16px; // Size of the close button
+`;
+
+export const CloseButtonPopup = styled.button<CloseButtonProps>`
+  position: relative;
+  top: 0;
+  left: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: ${(props) => (props.template === "dark" ? "#f5f5f5" : "#32363E")};
+  font-size: 16px;
 `;

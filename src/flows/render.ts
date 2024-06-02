@@ -1,39 +1,42 @@
-import { FlowState } from "./FlowState.ts";
-import { removeElementWrapper } from "../render/functions.ts";
-import {
-  removeFlowFromStorage,
-  setFlowInStorageIfDifferent,
-  setIntervalIdStorage,
-} from "./storage.ts";
+import { FlowState } from "./FlowState";
+import { removeElementWrapper } from "../elements/render/functions";
+import { removeFlowFromStorage, setFlowInStorageIfDifferent } from "./storage";
 import {
   Flow,
   FlowFinishEffectType,
   FlowFinishFullScreenAnimation,
-} from "../types/flow.ts";
-import * as domEventListeners from "./event-listeners.ts";
-import { showAnimation } from "./finish-animation.ts";
-import { removeFlowStepElement, renderFlowStep } from "./render-step.ts";
-import { track } from "../tracker/tracker.ts";
-import { EventType } from "../tracker/types.ts";
+} from "../types/flow";
+import * as domEventListeners from "./event-listeners";
+import { showAnimation } from "./finish-animation";
+import { removeFlowStepElement, renderFlowStep } from "./render-step";
+import { track } from "../tracker/tracker";
+import { EventType } from "../tracker/types";
+import { parseBaseUrl } from "../url/processors.ts";
 
-function initFlowRenderer(flow: Flow): FlowState {
+function initFlowRenderer(flow: Flow, state: FlowState) {
   setFlowInStorageIfDifferent(flow);
-  const userStateService = new FlowState(localStorage, flow);
-  domEventListeners.setOnDocumentClickEvent(userStateService, onStepNextClick);
-
-  return userStateService;
+  domEventListeners.setOnDocumentClickEvent(state, onStepNextClick);
 }
 
-export const handlePreviewFlow = async (flow: Flow) => {
-  const userStateService = initFlowRenderer(flow);
+let lock: boolean = false;
+export const handlePreviewFlow = async (flow: Flow, state: FlowState) => {
+  initFlowRenderer(flow, state);
+  lock = false;
   const flowPreviewInterval = setInterval(async () => {
-    const isRunning = await tourListener(flow, userStateService);
+    if (lock) {
+      return;
+    }
+
+    lock = true;
+    const isRunning = await tourListener(flow, state);
+    lock = false;
+
     if (!isRunning) {
       gracefulTerminatePreviewFlow();
+      state.destroy();
       clearInterval(flowPreviewInterval);
     }
   }, 500);
-  setIntervalIdStorage(flowPreviewInterval);
   return;
 };
 
@@ -50,60 +53,58 @@ const tourListener = async (
   flow: Flow,
   userStateService: FlowState,
 ): Promise<boolean> => {
+  if (!flow.baseUrl) {
+    return false;
+  }
+
   const currentUrl = window.location.origin;
-  if (flow.baseUrl && !currentUrl.endsWith(flow.baseUrl)) {
+  const flowBaseUrl = parseBaseUrl(flow.baseUrl);
+  if (!currentUrl.endsWith(flowBaseUrl)) {
+    return false;
+  }
+  if (userStateService.isSkipped()) {
+    return false;
+  }
+  if (userStateService.isFinished()) {
+    onFinishFlow(flow);
+    track(flow.id, EventType.FlowFinished);
     return false;
   }
 
   const currentStep = userStateService.getCurrentStep();
-  if (currentStep) {
-    const onNextStepEvent = async () => {
-      await onStepNextClick(userStateService);
-    };
-
-    const onSkip = () => {
-      gracefulTerminatePreviewFlow();
-      track(flow.id, EventType.FlowSkipped, {
-        stepId: currentStep.stepId,
-      });
-    };
-
-    await renderFlowStep(
-      currentStep,
-      {
-        themeColor: flow.opts.themeColor ?? "#f5f5f5",
-        elementTemplate: flow.opts.elementTemplate,
-        avatarId: flow.opts.avatarId,
-        dataAttributes: {
-          flowId: flow.id,
-        },
-        beforeCloseListeners: [onSkip],
-        afterRenderingListeners: [
-          () => {
-            track(flow.id, EventType.FlowStepStart, {
-              stepId: currentStep.stepId,
-            });
-          },
-        ],
-      },
-      onNextStepEvent,
-    );
-
-    return true;
-  } else {
-    if (userStateService.isFinished()) {
-      if (!userStateService.isFinishEffectsInProgress()) {
-        userStateService.handleFinish();
-        onFinishFlow(flow);
-      } else {
-        userStateService.destroy();
-      }
-
-      return false;
-    } else {
-      throw Error("No step available");
-    }
+  if (!currentStep) {
+    throw Error("No step available");
   }
+
+  const onNextStepEvent = async () => {
+    await onStepNextClick(userStateService);
+  };
+  const onSkip = () => {
+    userStateService.switchToSkipped();
+    track(flow.id, EventType.FlowSkipped, {
+      stepId: currentStep.stepId,
+    });
+  };
+
+  const renderOpts = {
+    themeColor: flow.opts.themeColor ?? "#f5f5f5",
+    elementTemplate: flow.opts.elementTemplate,
+    avatarId: flow.opts.avatarId,
+    dataAttributes: {
+      flowId: flow.id,
+    },
+    beforeCloseListeners: [onSkip],
+    afterRenderingListeners: [
+      () => {
+        track(flow.id, EventType.FlowStepStart, {
+          stepId: currentStep.stepId,
+        });
+      },
+    ],
+  };
+  await renderFlowStep(currentStep, renderOpts, onNextStepEvent);
+
+  return true;
 };
 
 const onFinishFlow = (flow: Flow) => {

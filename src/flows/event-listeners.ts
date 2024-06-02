@@ -1,7 +1,7 @@
-import { FlowState } from "./FlowState.ts";
-import { FlowStepElementAction } from "../types/flow.ts";
-import { waitForElm } from "../render/functions.ts";
-import { matchTargetUrl } from "../url/processors.ts";
+import { FlowState } from "./FlowState";
+import { FlowStepElementAction } from "../types/flow";
+import { waitForElm } from "../elements/render/functions";
+import { matchTargetUrl } from "../url/processors";
 
 let onDocumentClick: any = null;
 let onDocumentInput: any = null;
@@ -82,7 +82,7 @@ const clickEventsListener = async (
     clickedDirectParent;
 
   if (matchTargetElement && matchUrls) {
-    await onStepNextClick(userStateService);
+    onStepNextClick(userStateService);
   }
 };
 

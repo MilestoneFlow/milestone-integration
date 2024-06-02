@@ -1,4 +1,6 @@
-export default function (onUrlChangeListeners: UrlChangeListener[] = []): void {
+export function listenUrlChange(
+  onUrlChangeListeners: UrlChangeListener[] = [],
+): () => void {
   let currentUrl = location.href;
 
   const handleUrlChange = () => {
@@ -38,6 +40,14 @@ export default function (onUrlChangeListeners: UrlChangeListener[] = []): void {
 
   // Initial execution
   execListeners(currentUrl, onUrlChangeListeners);
+
+  // Cleanup
+  return () => {
+    window.removeEventListener("popstate", handleUrlChange);
+    window.removeEventListener("hashchange", handleUrlChange);
+    observer.disconnect();
+    onUrlChangeListeners.length = 0;
+  };
 }
 
 const execListeners = (url: string, listeners: UrlChangeListener[]) => {

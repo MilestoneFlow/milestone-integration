@@ -1,5 +1,5 @@
 import chroma from "chroma-js";
-import { MilestoneFlowElementWrapperId } from "../render/constants.ts";
+import { MilestoneFlowElementWrapperId } from "./render/constants";
 
 interface HotspotElementOpts {
   id: string;

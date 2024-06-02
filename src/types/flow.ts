@@ -1,4 +1,4 @@
-import { Block, Placement } from "./element.ts";
+import { Block, ElementTemplate, Placement } from "./element";
 
 export interface StepElementProps {
   onStepNextClick: (step: any, noEnd?: boolean) => void;
@@ -19,7 +19,7 @@ export interface FlowOpts {
   trigger: FlowTrigger;
   avatarId?: string;
   themeColor?: string;
-  elementTemplate: FlowStepElementTemplate;
+  elementTemplate: ElementTemplate;
   finishEffect?: FlowFinishEffect;
 }
 
@@ -101,11 +101,6 @@ export interface FlowStepOpts {
 export enum FlowStepElementType {
   TOOLTIP = "tooltip",
   POPUP = "popup",
-}
-
-export enum FlowStepElementTemplate {
-  LIGHT = "light",
-  DARK = "dark",
 }
 
 export enum FlowStepElementAction {

@@ -1,7 +1,7 @@
 import {
   FinishFullScreenPosition,
   FlowFinishFullScreenAnimation,
-} from "../types/flow.ts";
+} from "../types/flow";
 
 export const injectAnimationStyles = (document: Document) => {
   document.getElementById("milestone_animation_styles")?.remove();

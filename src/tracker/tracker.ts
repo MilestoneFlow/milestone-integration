@@ -1,6 +1,6 @@
-import * as q from "./queue.ts";
-import { EventType } from "./types.ts";
-import { PublicApiClient } from "../api/publicApiClient.ts";
+import * as q from "./queue";
+import { EventType } from "./types";
+import { PublicApiClient } from "../api/publicApiClient";
 
 let intervalId: number | null = null;
 

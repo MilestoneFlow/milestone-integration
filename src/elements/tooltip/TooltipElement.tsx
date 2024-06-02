@@ -1,5 +1,4 @@
 import React, { CSSProperties, useEffect, useRef, useState } from "react";
-import { VisualElementTemplate } from "../model/VisualElement";
 import {
   ActionButton,
   Card,
@@ -7,8 +6,8 @@ import {
   CloseButton,
 } from "../card/CardComponent";
 import anime from "animejs";
-import { Block, Placement } from "../../types/element.ts";
-import { getTextBlockContent } from "../../util/BlockService.ts";
+import { Block, ElementTemplate, Placement } from "../../types/element";
+import { getTextBlockContent } from "../../util/BlockService";
 
 export default function TooltipElement({
   template,
@@ -85,10 +84,10 @@ export default function TooltipElement({
       setCurrentPlacement(detail.position);
     };
 
-    window.addEventListener("milestoneTooltipPositionUpdate", handleDataChange);
+    window.addEventListener("MilestoneTooltipPositionUpdate", handleDataChange);
     return () => {
       window.removeEventListener(
-        "milestoneTooltipPositionUpdate",
+        "MilestoneTooltipPositionUpdate",
         handleDataChange,
       );
     };
@@ -159,7 +158,7 @@ interface TooltipElementProps {
   blocks: Block[];
   placement: Placement;
   onStepNextClick: (() => void) | undefined;
-  template: VisualElementTemplate;
+  template: ElementTemplate;
   setHeight: any;
   themeColor: string | undefined;
   actionable?: boolean;

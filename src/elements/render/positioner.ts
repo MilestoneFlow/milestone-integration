@@ -1,6 +1,6 @@
-import { Placement } from "../types/element.ts";
+import { Placement } from "../../types/element";
 import { autoUpdate, computePosition, flip, shift } from "@floating-ui/dom";
-import { removeElementWrapper } from "./functions.ts";
+import { removeElementWrapper } from "./functions";
 
 export const repositionAttachedElement = async (
   stepElement: HTMLElement,
@@ -28,7 +28,7 @@ export const repositionAttachedElement = async (
     });
     if (placement !== elementPlacement) {
       window.dispatchEvent(
-        new CustomEvent("milestoneTooltipPositionUpdate", {
+        new CustomEvent("MilestoneTooltipPositionUpdate", {
           detail: { position: placement },
         }),
       );

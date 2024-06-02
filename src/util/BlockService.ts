@@ -1,4 +1,4 @@
-import { Block, BlockType } from "../types/element.ts";
+import { Block, BlockType } from "../types/element";
 
 export const updateBlockText = (blocks: Block[], newText: string): Block[] => {
   const stepTextBlock = blocks.filter(
