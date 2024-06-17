@@ -7,21 +7,13 @@ import * as flowsBootstrap from "./flows/bootstrap";
 import { listenUrlChange } from "./url/listener.ts";
 import { removeAppContainer } from "./elements/render/functions.ts";
 
+export const flowsCacheKey = "demoFlowsState";
+
 const bootstrap = async (token: string, user: EnrolledUser) => {
-  const publicApiClient = createPublicApiClient(token);
-  await publicApiClient.validate();
-
-  await publicApiClient.enroll(user);
-
-  const helpersListener = await createHelpersListener(publicApiClient);
-
-  const unsubscribeFromUrlChanges = listenUrlChange([helpersListener]);
-  tracker.start(publicApiClient, user.externalId);
-
-  await flowsBootstrap.listener(publicApiClient, user);
+  localStorage.removeItem(flowsCacheKey);
+  await flowsBootstrap.listener(user);
 
   return () => {
-    unsubscribeFromUrlChanges();
     flowsBootstrap.stop();
     tracker.stop();
     removeAppContainer(document);
@@ -31,12 +23,9 @@ const bootstrap = async (token: string, user: EnrolledUser) => {
 const init = async (token: string, userData: InputUserData) => {
   try {
     console.log("Initializing Milestone Flow Client");
-    (window as any).milestoneFlowClient.stop = await bootstrap(
-      token,
-      toEnrolledUser(userData),
-    );
-    window.dispatchEvent(new Event("MilestoneFlowClientReady"));
+    await bootstrap(token, toEnrolledUser(userData));
   } catch (err) {
+    console.error(err);
     console.error("Unexpected error. Check the API Token.");
   }
 };
@@ -49,11 +38,4 @@ if (typeof window !== "undefined") {
     (window as any).milestoneFlowClient = {};
   }
   (window as any).milestoneFlowClient.init = init;
-  (window as any).milestoneFlowClient.stop = undefined;
 }
-
-window.addEventListener("MilestoneForceStopEvent", () => {
-  if ((window as any).milestoneFlowClient.stop) {
-    (window as any).milestoneFlowClient.stop();
-  }
-});
