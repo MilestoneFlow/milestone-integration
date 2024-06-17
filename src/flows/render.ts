@@ -12,6 +12,7 @@ import { removeFlowStepElement, renderFlowStep } from "./render-step";
 import { track } from "../tracker/tracker";
 import { EventType } from "../tracker/types";
 import { parseBaseUrl } from "../url/processors.ts";
+import { listener } from "./bootstrap.ts";
 
 function initFlowRenderer(flow: Flow, state: FlowState) {
   setFlowInStorageIfDifferent(flow);
@@ -19,7 +20,11 @@ function initFlowRenderer(flow: Flow, state: FlowState) {
 }
 
 let lock: boolean = false;
-export const handlePreviewFlow = async (flow: Flow, state: FlowState) => {
+export const handlePreviewFlow = async (
+  flow: Flow,
+  state: FlowState,
+  opts: TourListenerOpts = {},
+) => {
   initFlowRenderer(flow, state);
   lock = false;
   const flowPreviewInterval = setInterval(async () => {
@@ -28,13 +33,15 @@ export const handlePreviewFlow = async (flow: Flow, state: FlowState) => {
     }
 
     lock = true;
-    const isRunning = await tourListener(flow, state);
+    const isRunning = await tourListener(flow, state, opts);
     lock = false;
 
     if (!isRunning) {
       gracefulTerminatePreviewFlow();
       state.destroy();
       clearInterval(flowPreviewInterval);
+
+      opts.afterTerminateCallbacks?.forEach((cb) => cb());
     }
   }, 500);
   return;
@@ -52,6 +59,7 @@ export const gracefulTerminatePreviewFlow = () => {
 const tourListener = async (
   flow: Flow,
   userStateService: FlowState,
+  opts: TourListenerOpts = {},
 ): Promise<boolean> => {
   if (!flow.baseUrl) {
     return false;
@@ -67,7 +75,9 @@ const tourListener = async (
   }
   if (userStateService.isFinished()) {
     onFinishFlow(flow);
+
     track(flow.id, EventType.FlowFinished);
+    opts.onFinishCallbacks?.forEach((cb) => cb(flow));
     return false;
   }
 
@@ -81,6 +91,7 @@ const tourListener = async (
   };
   const onSkip = () => {
     userStateService.switchToSkipped();
+    opts.onSkipCallbacks?.forEach((cb) => cb(flow, currentStep.stepId));
     track(flow.id, EventType.FlowSkipped, {
       stepId: currentStep.stepId,
     });
@@ -95,6 +106,9 @@ const tourListener = async (
     },
     beforeCloseListeners: [onSkip],
     afterRenderingListeners: [
+      ...(opts.onStepStartCallbacks?.map(
+        (cb) => () => cb(flow, currentStep?.stepId ?? ""),
+      ) ?? []),
       () => {
         track(flow.id, EventType.FlowStepStart, {
           stepId: currentStep.stepId,
@@ -127,3 +141,10 @@ const onStepNextClick = async (userStateService: FlowState) => {
 
   userStateService.switchToNextStep();
 };
+
+export interface TourListenerOpts {
+  onFinishCallbacks?: ((flow: Flow) => void)[];
+  onSkipCallbacks?: ((flow: Flow, skippedStepId: string) => void)[];
+  onStepStartCallbacks?: ((flow: Flow, stepId: string) => void)[];
+  afterTerminateCallbacks?: (() => void)[];
+}

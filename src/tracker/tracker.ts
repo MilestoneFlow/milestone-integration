@@ -9,7 +9,12 @@ export function track(
   eventType: EventType,
   metadata: Record<string, any> = {},
 ) {
-  q.add({ entityId, eventType, timestamp: Date.now(), metadata });
+  q.add({
+    entityId,
+    eventType,
+    timestamp: Math.floor(Date.now() / 1000),
+    metadata,
+  });
 }
 
 export function start(apiClient: PublicApiClient, externalUserId: string) {

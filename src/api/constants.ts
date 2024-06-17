@@ -1,2 +1,1 @@
-// export const PublicApiBaseUrl = "https://core.milestoneflow.io";
-export const PublicApiBaseUrl = "http://localhost:3333";
+export const PublicApiBaseUrl = import.meta.env.VITE_PUBLIC_API_BASE_URL;

@@ -15,3 +15,20 @@ export interface InputUserData {
   segment?: string;
   sessionId?: string;
 }
+
+export interface UserState {
+  workspaceId: string;
+  userId: string;
+  flowsData: FlowsData;
+  metadata: Record<string, string>;
+  updatedTimestamp: number;
+}
+
+export interface FlowsData {
+  completedFlowsIds: string[];
+  skippedFlowsIds: string[];
+  currentFlowId: string;
+  currentStepId: string;
+  lastSubmittedFlowId: string;
+  lastSubmittedFlowTimestamp: number;
+}

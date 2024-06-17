@@ -1,4 +1,4 @@
-import { EnrolledUser } from "../types/user";
+import { EnrolledUser, UserState } from "../types/user";
 import { PublicApiBaseUrl } from "./constants";
 import { Helper } from "../types/helper";
 import { Flow } from "../types/flow";
@@ -48,7 +48,7 @@ class PublicApiClient {
   }
 
   public async enrollInFlow(externalUserId: string): Promise<Flow | null> {
-    const res = await fetch(this.getURL(`/${externalUserId}/flows`), {
+    const res = await fetch(this.getURL(`/${externalUserId}/flows/enroll`), {
       method: "POST",
       headers: await this.getHeaders(),
     }).then((res) => res.json());
@@ -64,6 +64,17 @@ class PublicApiClient {
       method: "POST",
       headers: await this.getHeaders(),
       body: JSON.stringify({ externalUserId, data }),
+    });
+  }
+
+  public async updateFlowState(
+    externalUserId: string,
+    data: Partial<FlowStateUpdateRequest>,
+  ): Promise<void> {
+    await fetch(this.getURL(`/${externalUserId}/flows/state`), {
+      method: "POST",
+      headers: await this.getHeaders(),
+      body: JSON.stringify({ ...data }),
     });
   }
 
@@ -83,3 +94,10 @@ export const createPublicApiClient = (token: string) =>
   new PublicApiClient(token);
 
 export type { PublicApiClient };
+
+export interface FlowStateUpdateRequest {
+  flowId: string;
+  currentStepId: string;
+  finished: boolean;
+  skipped: boolean;
+}
