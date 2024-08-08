@@ -7,13 +7,14 @@ import { PublicApiClient } from "../api/publicApiClient";
 import { EnrolledUser } from "../types/user";
 import { FlowState } from "./FlowState";
 import { Flow } from "../types/flow.ts";
+import { parseBaseUrl } from "../url/processors.ts";
 
 export const listener = async (
   publicApiClient: PublicApiClient,
   user: EnrolledUser,
 ) => {
   const flow = await publicApiClient.enrollInFlow(user.externalId);
-  if (flow) {
+  if (flow && isValidBaseUrl(flow, window.location.origin)) {
     const state = new FlowState(localStorage, flow);
     const listenerOpts = getListenerOpts(publicApiClient, user);
 
@@ -62,4 +63,13 @@ function getListenerOpts(
     onStepStartCallbacks: [onStepStart],
     afterTerminateCallbacks: [onTerminate],
   };
+}
+
+function isValidBaseUrl(flow: Flow, currentUrl: string): boolean {
+  if (!flow.baseUrl) {
+    return false;
+  }
+
+  const flowBaseUrl = parseBaseUrl(flow.baseUrl);
+  return currentUrl.endsWith(flowBaseUrl);
 }

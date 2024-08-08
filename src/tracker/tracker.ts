@@ -18,6 +18,7 @@ export function track(
 }
 
 export function start(apiClient: PublicApiClient, externalUserId: string) {
+  // @ts-expect-error - TS doesn't know about setInterval
   intervalId = setInterval(async () => {
     if (q.isEmpty()) {
       return;

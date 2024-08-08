@@ -61,15 +61,6 @@ const tourListener = async (
   userStateService: FlowState,
   opts: TourListenerOpts = {},
 ): Promise<boolean> => {
-  if (!flow.baseUrl) {
-    return false;
-  }
-
-  const currentUrl = window.location.origin;
-  const flowBaseUrl = parseBaseUrl(flow.baseUrl);
-  if (!currentUrl.endsWith(flowBaseUrl)) {
-    return false;
-  }
   if (userStateService.isSkipped()) {
     return false;
   }
